@@ -7,11 +7,7 @@ const PLATFORMS: Record<string, object> = {
     web: { browser: "Discord Web" },
     android: { browser: "Discord Android" },
     ios: { browser: "Discord iOS" },
-    vr: {
-        os: "android",
-        browser: "Discord VR",
-        device: "Discord VR"
-    },
+    vr: { os: "android", browser: "Discord VR", device: "Discord VR" },
     hidden: { browser: "" }
 };
 
@@ -26,10 +22,7 @@ const settings = definePluginSettings({
             { label: "Android", value: "android" },
             { label: "iOS", value: "ios" },
             { label: "VR (experimental)", value: "vr" },
-            {
-                label: "Hidden (experimental, may still show an icon)",
-                value: "hidden"
-            }
+            { label: "Hidden (experimental, may still show an icon)", value: "hidden" }
         ]
     }
 });
@@ -47,29 +40,25 @@ function SpooferWarning() {
 export default definePlugin({
     name: "PlatformSpoofer",
     description: "Choose which device Discord shows you on.",
-    tags: ["Utility"],
-    authors: [{ name: "Kittycord", id: 0n }],
+    authors: [{ name: "yamz2fly", id: 0n }],
 
     settings,
     settingsAboutComponent: SpooferWarning,
 
     patches: [
         {
-            find: "capabilities:1767421",
-            replacement: [
-                {
-                    match: /properties:(\w+),presence:(\w+),compress:/,
-                    replace: "properties:$self.spoof($1),presence:$2,compress:"
-                }
-            ]
+            find: "_doIdentify",
+            replacement: {
+                match: /properties:(.+?),presence:/,
+                replace: "properties:$self.spoof($1),presence:"
+            }
         }
     ],
 
     spoof(properties: object) {
         const platform = settings.store.platform;
-        return {
-            ...properties,
-            ...(PLATFORMS[platform] ?? PLATFORMS.desktop)
-        };
+        const result = { ...properties, ...(PLATFORMS[platform] ?? PLATFORMS.desktop) };
+        console.log("[PlatformSpoofer] identify properties:", result);
+        return result;
     }
 });
